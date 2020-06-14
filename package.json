@@ -26,6 +26,10 @@
         "ts-jest": "^26.1.0",
         "typescript": "^3.9.5"
     },
+    "dependencies": {
+        "@types/deep-equal": "^1.0.1",
+        "deep-equal": "^2.0.3"
+    },
     "eslintConfig": {
         "extends": "goldenthumb/typescript"
     },
