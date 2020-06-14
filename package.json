@@ -1,6 +1,6 @@
 {
     "name": "deep-state-store",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "main": "dist/index.js",
     "umd:main": "dist/index.umd.js",
     "module": "dist/index.m.js",
@@ -16,6 +16,16 @@
     "repository": "https://github.com/goldenthumb/deep-state-store.git",
     "author": "yhchoi <cyh8914@gmail.com>",
     "license": "MIT",
+    "keywords": [
+        "deep state store",
+        "state manager",
+        "state observer",
+        "state store",
+        "deep equal state",
+        "store",
+        "observer",
+        "event emitter"
+    ],
     "devDependencies": {
         "@types/jest": "^26.0.0",
         "eslint": "^7.2.0",
