@@ -1,18 +1,16 @@
 import equal from 'deep-equal';
-import Emitter, { Listener } from './EventEmitter';
 
-interface State {
-    [name: string]: any;
-}
+type State = { [name: string]: any };
+type Listener = (...args: any) => void;
 
 export default class Store<T extends State> {
     private _state: T;
-    private _emitter: Emitter;
+    private _events: { [event: string]: Listener[] };
     private _defer: Promise<void> | null;
 
     constructor(initState: T) {
         this._state = initState;
-        this._emitter = new Emitter();
+        this._events = {};
         this._defer = null;
     }
 
@@ -21,25 +19,33 @@ export default class Store<T extends State> {
     }
 
     on<K extends (keyof T & string)>(deps: K[], listener: Listener) {
-        const clearEvents = deps.map((dep) => this._emitter.on(dep, () => listener(this._state)));
+        deps.forEach((dep) => {
+            (this._events[dep] = this._events[dep] || []).push(listener);
+        });
 
         return () => {
-            clearEvents.forEach(clearEvent => clearEvent());
+            deps.forEach((dep) => {
+                this._events[dep] = this._events[dep].filter((fn) => fn !== listener);
+            });
         };
     }
 
     set(nextState: T) {
         for (const [key, value] of Object.entries(nextState)) {
-            if (!this._state.hasOwnProperty(key)) throw new Error(`State does not exist. (${key})`);
+            if (!hasOwn(this._state, key)) throw new Error(`State does not exist. (${key})`);
             if (equal(this._state[key], value)) continue;
             this._state = { ...this._state, [key]: value };
 
             if (!this._defer) {
                 this._defer = Promise.resolve().then(() => {
                     this._defer = null;
-                    this._emitter.emit(key, this._state[key]);
+                    (this._events[key] || []).forEach((fn) => fn(this._state));
                 });
             }
         }
     }
+}
+
+function hasOwn(obj: Record<string, any>, key: string) {
+    return Object.prototype.hasOwnProperty.call(obj, key);
 }
