@@ -31,17 +31,21 @@ export default class Store<T extends State> {
     }
 
     set(nextState: T) {
-        for (const [key, value] of Object.entries(nextState)) {
+        for (const key of Object.keys(nextState)) {
             if (!hasOwn(this._state, key)) throw new Error(`State does not exist. (${key})`);
-            if (equal(this._state[key], value)) continue;
-            this._state = { ...this._state, [key]: value };
+        }
 
-            if (!this._defer) {
-                this._defer = Promise.resolve().then(() => {
-                    this._defer = null;
-                    (this._events[key] || []).forEach((fn) => fn(this._state));
-                });
-            }
+        const prevState = { ...this._state };
+        this._state = { ...this._state, ...nextState };
+
+        if (!this._defer) {
+            this._defer = Promise.resolve().then(() => {
+                this._defer = null;
+                for (const [key, fns] of Object.entries(this._events)) {
+                    if (equal(this._state[key], prevState[key])) continue;
+                    fns.forEach((fn) => fn(this._state));
+                }
+            });
         }
     }
 }
